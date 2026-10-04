@@ -1,0 +1,7 @@
+{
+  "game": "pokemon",
+  "currency": "EUR",
+  "price_source": "cardmarket",
+  "group_by": "set",
+  "sort_by": "value"
+}

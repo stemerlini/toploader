@@ -1,0 +1,172 @@
+Screen {
+    background: $background;
+}
+
+/* -- top bar: brand · game tabs · collection stats ----------------------- */
+
+#topbar {
+    height: 3;
+    background: $panel;
+    border-bottom: solid $primary 40%;
+}
+#brand {
+    width: auto;
+    padding: 1 2 0 2;
+    color: $primary;
+    text-style: bold;
+}
+#games {
+    width: 1fr;
+    background: $panel;
+}
+#stats {
+    width: auto;
+    padding: 1 2 0 2;
+}
+
+/* -- body ---------------------------------------------------------------- */
+
+#body {
+    height: 1fr;
+}
+
+.pane-title {
+    height: 1;
+    padding: 0 1;
+    color: $primary;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#sidebar {
+    width: 30;
+    padding: 1 0 0 1;
+    border-right: solid $primary 20%;
+}
+#groups {
+    height: 1fr;
+    border: none;
+    background: $background;
+    padding: 0;
+}
+#groups > .option-list--option {
+    padding: 0 1;
+    margin-bottom: 1;
+}
+#groups:focus > .option-list--option-highlighted {
+    background: $primary 30%;
+}
+
+#main {
+    padding: 1 1 0 1;
+}
+#filter {
+    margin-bottom: 1;
+}
+#cards {
+    height: 1fr;
+    background: $background;
+}
+#cards > .datatable--header {
+    background: $panel;
+    color: $text-muted;
+    text-style: bold;
+}
+#empty {
+    height: 1fr;
+    content-align: center middle;
+    text-align: center;
+    color: $text-muted;
+}
+
+/* -- modals -------------------------------------------------------------- */
+
+ModalScreen {
+    align: center middle;
+    background: $background 70%;
+}
+
+.dialog {
+    width: 80;
+    height: auto;
+    max-height: 90%;
+    padding: 1 2;
+    background: $surface;
+    border: round $primary;
+}
+
+.title {
+    text-style: bold;
+    color: $primary;
+    width: 1fr;
+}
+.subtitle {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+.section {
+    margin-top: 1;
+    text-style: bold;
+    color: $secondary;
+}
+.footnote {
+    color: $text-muted;
+    margin-top: 1;
+}
+
+#query {
+    margin: 1 0;
+}
+#results {
+    height: 20;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+#entry-form {
+    grid-size: 2;
+    grid-columns: 18 1fr;
+    grid-rows: 1;
+    grid-gutter: 1 0;
+    height: auto;
+}
+
+.buttons {
+    height: auto;
+    margin-top: 1;
+    align-horizontal: right;
+}
+.buttons Button {
+    margin-left: 2;
+}
+
+#confirm {
+    width: 60;
+}
+
+#preview {
+    width: 90%;
+    max-width: 160;
+    height: 92%;
+    background: $surface;
+    border: round $primary;
+    padding: 1 2;
+}
+#preview-image {
+    width: 30;
+    height: 1fr;
+    margin-right: 2;
+}
+.no-image {
+    width: 30;
+    height: 1fr;
+    content-align: center middle;
+    color: $text-muted;
+    border: dashed $foreground 30%;
+}
+#preview-info {
+    width: 1fr;
+}
+.details {
+    height: auto;
+}
