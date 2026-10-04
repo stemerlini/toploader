@@ -51,6 +51,18 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ./toploader
 ```
 
+## Tests
+
+```sh
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pytest
+```
+
+The tests run offline: the price sources are replaced by small fixtures shaped like
+the real TCGCSV/TCGdex data, and the app is driven headless (search and preview,
+adding cards, sealed products, the preview's aspect ratio, table layout, currencies,
+and migrations of older collection files).
+
 ## Keys
 
 | Key | Action |
