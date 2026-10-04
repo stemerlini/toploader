@@ -92,6 +92,11 @@ Everything stays inside this folder:
 
 Set `TOPLOADER_HOME=/some/path` to keep the data somewhere else.
 
+**Automatic backup:** when you quit, Toploader commits `data/collection.db` and
+`data/config.json` (only those files) with a summary such as "Collection: 52 cards
+(23 unique), €3,297.29" and pushes to GitHub. Offline, the commit stays local and is
+pushed next time. Turn it off with `"auto_backup": false` in `data/config.json`.
+
 ## Adding another game
 
 Subclass `games.base.Game` (search, fetch_card, refresh, price) and add it to

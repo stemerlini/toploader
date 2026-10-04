@@ -216,15 +216,20 @@ class Toploader(App):
         self.refresh_groups()
         self.refresh_table(keep_entry)
 
+    def summary(self) -> tuple[int, int, float]:
+        """(copies, unique cards, total value in the display currency)."""
+        copies = sum(e.quantity for e in self.entries)
+        unique = len({e.card.id for e in self.entries})
+        value = sum((self.price_of(e) or 0) * e.quantity for e in self.entries)
+        return copies, unique, value
+
     def refresh_stats(self) -> None:
         currency = self.currency
         used = {self.source_of(e) for e in self.entries} - {None} or {self.source}
         # Preferred source first, e.g. "Cardmarket + TCGplayer → €".
         sources = " + ".join(SOURCE_NAMES[s] for s in sorted(used, key=lambda s: s != self.source))
         converted = any(SOURCE_CURRENCY[s] != currency for s in used)
-        copies = sum(e.quantity for e in self.entries)
-        unique = len({e.card.id for e in self.entries})
-        value = sum((self.price_of(e) or 0) * e.quantity for e in self.entries)
+        copies, unique, value = self.summary()
         self.query_one("#stats", Static).update(
             f"[b]{copies}[/] cards · [b]{unique}[/] unique · "
             f"[b $success]{money(value, currency)}[/] [dim]{sources}"

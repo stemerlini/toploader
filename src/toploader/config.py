@@ -15,6 +15,7 @@ class Config:
     price_source: str = "cardmarket"  # "cardmarket" (EUR) or "tcgplayer" (USD)
     group_by: str = "set"  # set | type | rarity | category | condition
     sort_by: str = "set"  # set | name | value | quantity
+    auto_backup: bool = True  # commit data/ and push to GitHub when the app closes
 
     @classmethod
     def load(cls) -> "Config":
