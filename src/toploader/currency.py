@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 
@@ -40,7 +40,7 @@ class Rates:
 
     @property
     def stale(self) -> bool:
-        return not self.fetched_at or datetime.now(timezone.utc) - self.fetched_at > MAX_AGE
+        return not self.fetched_at or datetime.now(UTC) - self.fetched_at > MAX_AGE
 
     async def update(self) -> None:
         async with httpx.AsyncClient(timeout=15, headers={"User-Agent": USER_AGENT}) as client:
@@ -51,7 +51,7 @@ class Rates:
             data = response.json()
         self.rates = {"EUR": 1.0, **data["rates"]}
         self.date = data["date"]
-        self.fetched_at = datetime.now(timezone.utc)
+        self.fetched_at = datetime.now(UTC)
         RATES_FILE.parent.mkdir(parents=True, exist_ok=True)
         RATES_FILE.write_text(json.dumps({
             "rates": data["rates"], "date": self.date,

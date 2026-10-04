@@ -1,103 +1,123 @@
-# Toploader
+<p align="center">
+  <img src="assets/banner.png" alt="Toploader" width="560">
+</p>
 
-A terminal app for tracking a trading card collection. It supports Pokémon for now,
-and other games can plug in later as new tabs.
+<p align="center"><b>Your trading card binder, in the terminal.</b><br>
+Track Pokémon singles and sealed products, Japanese and international, with live market prices.</p>
 
-- Cards are grouped in a sidebar by set, language, type, rarity, category or condition.
-- **Space** opens a preview with the card image (Sixel in foot, otherwise unicode
-  half-blocks), card details and market prices — in the collection and in search
-  results (where Enter adds the previewed card).
-- **Sealed products** (booster boxes, packs, ETBs, promo packs, collection boxes…) are
-  tracked next to singles, Japanese and international. They show a ◆ marker and a
-  SEALED tag in search, use the conditions Sealed / Sealed with damaged packaging /
-  Opened, and are priced from TCGplayer.
-- **Print run** (sealed): Unknown / First print / Reprint. A first-print box and a
-  reprint box are separate lines. TCGplayer lists one product for every print run, so
-  its price is usually the reprint price.
-- **Your value**: an optional per-line valuation that replaces the market price in all
-  totals, marked ✎ in the list. Useful for first prints, graded cards or anything the
-  market data can't tell apart.
-- The list adapts to the window width: on narrow terminals the Set, Rarity and #
-  columns are hidden (in that order) before anything gets cut off.
-- **Japanese and English cards live together.** One search covers both catalogues, and
-  each card carries a language flag (JP / EN / IT …) shown as a coloured badge. Group the
-  sidebar by language (`g`) to see them separately.
-  - Japanese printings come from [TCGCSV](https://tcgcsv.com), a free daily mirror of
-    TCGplayer's "Pokemon Japan" catalogue: every set and promo, with English card names,
-    images and USD prices. The card list (~28k cards, 4 MB) downloads on the first search
-    and refreshes weekly.
-  - International printings come from [TCGdex](https://tcgdex.dev): Cardmarket (EUR) and
-    TCGplayer (USD) prices.
-  - International sealed products come from TCGCSV's "Pokemon" category.
-  - Search by English name or number: `270/SM-P`, `SM-P 270`, `swsh3 136`,
-    `151 booster box`.
-  - Search by set code to browse an expansion: `s4a` lists the whole set (sealed
-    products first), `s4a sealed` or `sm10 sealed` only its sealed products, and
-    `sm10a box` narrows within it. `sealed` on its own lists sealed products.
-- `p` picks the preferred price source; cards it doesn't cover (Japanese cards have
-  no Cardmarket price here) fall back to the other one, and the top bar shows which
-  sources are in use.
-- All prices are shown in euros by default (`c` cycles € / £ / $). TCGplayer's dollar
-  prices are converted with the daily ECB exchange rate from frankfurter.dev.
-- Prices refresh automatically on start when older than 24 h, or on demand with `r`.
-- Inventory is tracked per finish (normal / holo / reverse / 1st edition), condition
-  (Cardmarket scale M → PO), language, quantity, price paid and notes.
-- Colours follow the active Omarchy theme.
+![Toploader showing a Japanese Pokémon collection grouped by set](docs/screenshot.svg)
 
-## Run
+## Features
+
+- **One collection, every language.** Japanese and international cards sit side by side,
+  each with a language badge (JP, EN, IT…). Group the sidebar by set, language, type,
+  rarity, category or condition.
+- **Singles and sealed.** Booster boxes, packs, ETBs, promo packs, decks and collection
+  boxes are tracked next to your cards, with sealed conditions (Sealed, Sealed with
+  damaged packaging, Opened) and a print run (First print / Reprint).
+- **Live prices in euros.** Cardmarket and TCGplayer prices, converted to € (or £ / $)
+  with the daily ECB rate. Prices older than a day refresh on start.
+- **Your own valuation.** Override the market price for any line (first prints, graded
+  cards…); those values are marked ✎.
+- **Card previews.** Press Space for a large image with details and prices, both in your
+  collection and in search results. Sixel images in foot, half-blocks elsewhere, always
+  at the card's real aspect ratio.
+- **Fits your terminal and theme.** The list hides less important columns on narrow
+  windows, and colours follow the active Omarchy theme.
+- **Automatic backup.** On quit, the collection is committed and pushed to GitHub.
+
+## Getting started
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -e .
 ./toploader
 ```
 
-## Tests
+Press `a` to add your first card, `?` for help.
 
-```sh
-.venv/bin/pip install -e ".[dev]"
-.venv/bin/pytest
-```
+## Searching
 
-The tests run offline: the price sources are replaced by small fixtures shaped like
-the real TCGCSV/TCGdex data, and the app is driven headless (search and preview,
-adding cards, sealed products, the preview's aspect ratio, table layout, currencies,
-and migrations of older collection files).
+| Type | Finds |
+|---|---|
+| `pikachu`, `ash pikachu` | Cards and sealed products by English name |
+| `270/SM-P`, `SM-P 270`, `71/SM-P` | A card by number (leading zeros optional) |
+| `swsh3 136` | An international card by TCGdex set id and number |
+| `s4a` | A whole expansion: its sealed products first, then the cards in order |
+| `s4a sealed`, `sm10a box` | Only that set's sealed products / matching items |
+| `sealed` | Every sealed product |
+
+In the results, **Space** previews and **Enter** adds.
 
 ## Keys
 
 | Key | Action |
 |---|---|
-| `a` | Add a card (search by name, or by set id + number such as `swsh3 136`) |
-| `space` | Preview the card image and details |
-| `e` / `enter` | Edit the selected line |
+| `a` | Add a card or sealed product |
+| `space` | Preview the selected card |
+| `e` / `enter` | Edit the selected line (finish, condition, print run, value…) |
 | `+` / `-` | Change quantity |
 | `d` | Delete |
-| `g` | Cycle grouping |
-| `s` | Cycle sort (set, name, value, quantity) |
-| `/` | Filter (`esc` clears) |
+| `g` / `s` | Cycle grouping / sort (set, name, value, quantity) |
+| `/` | Filter the list (`esc` clears) |
 | `r` | Refresh prices |
-| `c` | Show prices in € / £ / $ (converted with daily ECB rates) |
+| `c` | Show prices in € / £ / $ |
 | `p` | Prefer Cardmarket or TCGplayer prices |
-| `tab` | Switch between sidebar and list |
-| `q` | Quit |
+| `?` | About and help |
+| `q` | Quit (and back up) |
 
-## Files
+## Where the data comes from
 
-Everything stays inside this folder:
+| | Source | Prices |
+|---|---|---|
+| Japanese cards and sealed | [TCGCSV](https://tcgcsv.com), a daily mirror of TCGplayer's "Pokemon Japan" catalogue | TCGplayer (USD) |
+| International cards | [TCGdex](https://tcgdex.dev) | Cardmarket (EUR) and TCGplayer (USD) |
+| International sealed | TCGCSV, TCGplayer's "Pokemon" category | TCGplayer (USD) |
+| Exchange rates | [frankfurter.dev](https://frankfurter.dev) (ECB) | — |
 
-- `data/collection.db`: your collection (SQLite)
-- `data/config.json`: settings (grouping, sort, price source)
-- `cache/images/`: downloaded card images, safe to delete
-- `cache/tcgcsv-*.db`: downloaded product lists (Japanese, international sealed), safe to delete
+The TCGCSV product lists (~31k Japanese items, ~3k international sealed) download on the
+first search and refresh weekly. None of the sources needs an API key.
 
-Set `TOPLOADER_HOME=/some/path` to keep the data somewhere else.
+**Good to know:** TCGplayer lists one product per sealed item, so first-print and reprint
+boxes share a price (usually the reprint's); use *Your value* for first prints. Prices
+are for near-mint copies and are not adjusted for condition.
+
+## Your data
+
+Everything lives in this folder:
+
+| Path | What |
+|---|---|
+| `data/collection.db` | Your collection (SQLite) |
+| `data/config.json` | Settings: grouping, sort, currency, price source, backup |
+| `cache/` | Downloaded catalogues, images and rates; safe to delete |
+
+Set `TOPLOADER_HOME=/some/path` to keep the data elsewhere.
 
 **Automatic backup:** when you quit, Toploader commits `data/collection.db` and
-`data/config.json` (only those files) with a summary such as "Collection: 52 cards
-(23 unique), €3,297.29" and pushes to GitHub. Offline, the commit stays local and is
-pushed next time. Turn it off with `"auto_backup": false` in `data/config.json`.
+`data/config.json` (never other files) with a summary such as *"Collection: 52 cards
+(23 unique), €3,297.29"* and pushes to GitHub. Offline, the commit stays local and goes
+up next time. Turn it off with `"auto_backup": false` in `data/config.json`.
 
-## Adding another game
+## Development
 
-Subclass `games.base.Game` (search, fetch_card, refresh, price) and add it to
-`GAMES` in `games/__init__.py`. It then appears as a tab in the top bar.
+```sh
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pytest          # offline test suite
+.venv/bin/ruff check .    # lint
+```
+
+| Module | Role |
+|---|---|
+| `app.py`, `app.tcss` | Main screen: top bar, sidebar groups, adaptive table |
+| `screens.py` | Preview, search, add/edit form, About |
+| `games/pokemon.py` | The Pokémon game: combines the catalogues, prefixes ids (`jp:`, `en:`, `ens:`) |
+| `games/tcgcsv.py`, `games/tcgdex.py` | Catalogues: search, card data, prices |
+| `db.py` | Collection storage and migrations |
+| `currency.py`, `backup.py`, `logo.py` | Exchange rates, git backup, pixel-art logo |
+
+To add another game, implement `games.base.Game` (usually by combining one or more
+`Catalog`s, like `Pokemon` does) and add it to `GAMES` in `games/__init__.py`; it
+appears as a new tab. `tools/probe_terminal.py` reports what your terminal supports
+for image previews.
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.

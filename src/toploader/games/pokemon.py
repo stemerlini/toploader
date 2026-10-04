@@ -57,7 +57,7 @@ class Pokemon(Game):
         # shows all of it.
         answered = sum(1 for items in found if not isinstance(items, BaseException) and items)
         limit = self.MAX_PER_CATALOG if answered > 1 else None
-        for catalog, items in zip(catalogs, found):
+        for catalog, items in zip(catalogs, found, strict=True):
             if isinstance(items, BaseException):
                 continue
             results += [

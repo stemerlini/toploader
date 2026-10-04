@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 import re
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 
@@ -121,7 +121,7 @@ class TCGCSV(Catalog):
     async def prepare(self, progress=None) -> None:
         async with self._lock:
             synced = self._synced_at()
-            if synced and datetime.now(timezone.utc) - synced < MAX_AGE:
+            if synced and datetime.now(UTC) - synced < MAX_AGE:
                 return
             try:
                 await self._sync(progress)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .paths import DATA_DIR
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS inventory (
 
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 @dataclass
@@ -98,7 +98,7 @@ class Card:
     updated_at: str = ""
 
     @classmethod
-    def from_row(cls, row: sqlite3.Row) -> "Card":
+    def from_row(cls, row: sqlite3.Row) -> Card:
         return cls(
             id=row["id"],
             game=row["game"],
