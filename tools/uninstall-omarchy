@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Remove what tools/install-omarchy added. Your collection is not touched.
+set -euo pipefail
+
+PLUGIN_ID="smerlini.toploader"
+PLUGIN_DIR="$HOME/.config/omarchy/plugins/$PLUGIN_ID"
+
+if omarchy plugin list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" \
+    'any(.[]; .id == $id and .enabled == true)' >/dev/null; then
+  omarchy plugin disable "$PLUGIN_ID"
+fi
+# Only remove the folder if it holds exactly the files the installer copied.
+if [[ -d $PLUGIN_DIR ]] && [[ -z $(find "$PLUGIN_DIR" -type f ! -name manifest.json ! -name BarWidget.qml) ]]; then
+  rm -r "$PLUGIN_DIR"
+fi
+command -v omarchy-shell &>/dev/null && omarchy-shell shell rescanPlugins &>/dev/null || true
+
+rm -f "$HOME/.local/share/applications/toploader.desktop"
+rm -f "$HOME/.local/share/icons/hicolor/256x256/apps/toploader.png"
+gtk-update-icon-cache "$HOME/.local/share/icons/hicolor" &>/dev/null || true
+[[ -L $HOME/.local/bin/toploader ]] && rm "$HOME/.local/bin/toploader"
+
+echo "Toploader removed from Omarchy. The project folder and your collection are untouched."

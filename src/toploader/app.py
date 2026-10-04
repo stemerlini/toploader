@@ -30,6 +30,7 @@ from .screens import (
     SearchScreen,
 )
 from .theme import omarchy_theme
+from .valuation import summarize, unit_value
 
 GROUPINGS = ["set", "language", "type", "rarity", "category", "condition"]
 SORTS = ["set", "name", "value", "quantity"]
@@ -206,15 +207,8 @@ class Toploader(App):
         return self.config.currency if self.config.currency in CURRENCIES else "EUR"
 
     def price_of(self, entry: Entry) -> float | None:
-        """Unit value in the display currency: the user's own valuation if set,
-        otherwise the market price."""
-        if entry.my_value is not None:
-            return self.rates.convert(entry.my_value, entry.my_value_currency, self.currency)
-        found = self.game.price(entry.card, entry.finish, self.source)
-        if found is None:
-            return None
-        native, source = found
-        return self.rates.convert(native, SOURCE_CURRENCY[source], self.currency)
+        """Unit value in the display currency (own valuation or market price)."""
+        return unit_value(entry, self.game, self.source, self.currency, self.rates)
 
     def source_of(self, entry: Entry) -> str | None:
         if entry.my_value is not None:
@@ -230,10 +224,8 @@ class Toploader(App):
 
     def summary(self) -> tuple[int, int, float]:
         """(copies, unique cards, total value in the display currency)."""
-        copies = sum(e.quantity for e in self.entries)
-        unique = len({e.card.id for e in self.entries})
-        value = sum((self.price_of(e) or 0) * e.quantity for e in self.entries)
-        return copies, unique, value
+        s = summarize(self.entries, self.game, self.source, self.currency, self.rates)
+        return s.copies, s.unique, s.value
 
     def refresh_stats(self) -> None:
         currency = self.currency

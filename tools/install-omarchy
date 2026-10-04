@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Install Toploader into Omarchy: `toploader` command, apps-menu entry with
+# icon, and the bar widget plugin. Safe to run again (e.g. after moving the
+# project or after changing the plugin). Your collection stays in this folder;
+# everything installed elsewhere is a link, a copy of the plugin or a small
+# generated file. Undo with tools/uninstall-omarchy.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+BIN="$HOME/.local/bin/toploader"
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+DESKTOP="$HOME/.local/share/applications/toploader.desktop"
+PLUGIN_ID="smerlini.toploader"
+PLUGIN_DIR="$HOME/.config/omarchy/plugins/$PLUGIN_ID"
+SHELL_JSON="$HOME/.config/omarchy/shell.json"
+
+step() { printf '\e[1;32m›\e[0m %s\n' "$*"; }
+
+# 1. Python environment
+if [[ ! -x $ROOT/.venv/bin/toploader ]]; then
+  step "Creating the Python environment"
+  python3 -m venv "$ROOT/.venv"
+  "$ROOT/.venv/bin/pip" install -q -e "$ROOT"
+fi
+
+# 2. Command on PATH
+if [[ -e $BIN && ! -L $BIN ]]; then
+  echo "$BIN exists and is not a link; move it away and run again." >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$BIN")"
+ln -sfn "$ROOT/toploader" "$BIN"
+step "Command: $BIN → $ROOT/toploader"
+
+# 3. Icon and apps-menu entry
+mkdir -p "$ICON_DIR" "$(dirname "$DESKTOP")"
+cp "$ROOT/assets/icon-256.png" "$ICON_DIR/toploader.png"
+gtk-update-icon-cache "$HOME/.local/share/icons/hicolor" &>/dev/null || true
+cat >"$DESKTOP" <<DESKTOP
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Toploader
+GenericName=Card collection
+Comment=Track your Pokémon card collection and its value
+Exec=omarchy-launch-or-focus-tui --app-id=org.omarchy.toploader $BIN
+Icon=toploader
+Terminal=false
+Categories=Utility;
+Keywords=pokemon;tcg;cards;collection;binder;
+StartupNotify=true
+DESKTOP
+chmod +x "$DESKTOP"
+step "Apps menu: Toploader (SUPER + SPACE)"
+
+# 4. Bar widget plugin. Omarchy does not allow symlinked plugin folders, so the
+# files are copied; run this script again after changing them.
+[[ -L $PLUGIN_DIR ]] && rm "$PLUGIN_DIR"
+mkdir -p "$PLUGIN_DIR"
+changed=false
+for file in manifest.json BarWidget.qml; do
+  if ! cmp -s "$ROOT/omarchy/$file" "$PLUGIN_DIR/$file"; then
+    cp "$ROOT/omarchy/$file" "$PLUGIN_DIR/$file"
+    changed=true
+  fi
+done
+omarchy plugin validate "$PLUGIN_DIR"
+if command -v omarchy-shell &>/dev/null && omarchy-shell shell ping &>/dev/null; then
+  omarchy-shell shell rescanPlugins >/dev/null
+  if omarchy plugin list --json | jq -e --arg id "$PLUGIN_ID" \
+      'any(.[]; .id == $id and .enabled == true)' >/dev/null; then
+    if $changed; then
+      # The shell keeps loaded widgets in memory; a restart picks up the new files.
+      omarchy restart shell &>/dev/null || true
+      step "Bar widget: updated (shell restarted)"
+    else
+      step "Bar widget: already enabled and up to date"
+    fi
+  else
+    [[ -f $SHELL_JSON ]] && cp "$SHELL_JSON" "$SHELL_JSON.bak.$(date +%s)"
+    omarchy plugin enable "$PLUGIN_ID" --section right
+    step "Bar widget: enabled on the right of the bar (move it with: omarchy bar move $PLUGIN_ID --section <left|center|right>)"
+  fi
+else
+  step "Bar widget: linked; enable it with: omarchy plugin enable $PLUGIN_ID --section right"
+fi
+
+echo
+echo "Done. Open Toploader from the apps menu, the bar, or by typing: toploader"

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 — 2026-10-04
+
+### Omarchy integration
+- `tools/install-omarchy`: one command for a `toploader` command, an apps-menu entry with
+  the Poké Ball icon (opens or focuses Toploader), and the bar widget. Safe to re-run;
+  `tools/uninstall-omarchy` undoes it.
+- Bar widget plugin (`smerlini.toploader`): Poké Ball and collection value in the bar,
+  click to open, middle-click to refresh, tooltip with the totals; settings for showing
+  the value and the refresh interval.
+- `toploader summary` prints the collection totals as JSON from saved prices, and
+  `toploader --version` prints the version.
+
 ## 1.0.0 — 2026-10-04
 
 First complete version.

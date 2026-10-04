@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "smerlini.toploader",
+  "name": "Toploader",
+  "version": "1.1.0",
+  "author": "smerlini",
+  "license": "MIT",
+  "description": "Your Pokémon card collection's value in the bar; click to open Toploader.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Toploader",
+    "description": "Poké Ball with your collection's value. Click to open Toploader, middle-click to refresh.",
+    "category": "Info",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "showValue": true,
+      "refreshMinutes": 5
+    },
+    "schema": [
+      {
+        "key": "showValue",
+        "type": "boolean",
+        "label": "Show collection value",
+        "defaultValue": true,
+        "description": "Print the total value (e.g. €2.7k) next to the Poké Ball."
+      },
+      {
+        "key": "refreshMinutes",
+        "type": "integer",
+        "label": "Refresh (minutes)",
+        "min": 1,
+        "max": 120,
+        "step": 1,
+        "defaultValue": 5,
+        "description": "How often the value is re-read from your collection. It uses saved prices only, so this is cheap and offline."
+      }
+    ]
+  }
+}

@@ -28,12 +28,32 @@ Track Pokémon singles and sealed products, Japanese and international, with liv
 
 ## Getting started
 
+On Omarchy, one command sets everything up:
+
+```sh
+tools/install-omarchy
+```
+
+It creates the Python environment if needed and adds:
+
+- a `toploader` command (`~/.local/bin/toploader`, a link to this folder),
+- **Toploader in the apps menu** (SUPER + SPACE) with the Poké Ball icon; it opens in a
+  terminal, or focuses the window if it is already open,
+- a **bar widget**: a Poké Ball with your collection's value (e.g. 󰐝 €2.7k). Click to
+  open Toploader, middle-click to refresh, hover for cards, unique cards and the exact
+  value. Its settings (show value, refresh interval) are in the bar's widget settings,
+  and `omarchy bar move smerlini.toploader --section left` moves it.
+
+Run it again after updating the project; `tools/uninstall-omarchy` removes it all (your
+collection stays). Elsewhere, run it directly:
+
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -e .
 ./toploader
 ```
 
-Press `a` to add your first card, `?` for help.
+Press `a` to add your first card, `?` for help. `toploader summary` prints the
+collection totals as JSON (from saved prices, no network).
 
 ## Searching
 
@@ -113,7 +133,9 @@ up next time. Turn it off with `"auto_backup": false` in `data/config.json`.
 | `games/pokemon.py` | The Pokémon game: combines the catalogues, prefixes ids (`jp:`, `en:`, `ens:`) |
 | `games/tcgcsv.py`, `games/tcgdex.py` | Catalogues: search, card data, prices |
 | `db.py` | Collection storage and migrations |
+| `valuation.py` | What a line is worth (own value or market price), shared with `toploader summary` |
 | `currency.py`, `backup.py`, `logo.py` | Exchange rates, git backup, pixel-art logo |
+| `omarchy/` | The Omarchy bar widget plugin (copied into `~/.config/omarchy/plugins/` by the installer) |
 
 To add another game, implement `games.base.Game` (usually by combining one or more
 `Catalog`s, like `Pokemon` does) and add it to `GAMES` in `games/__init__.py`; it
