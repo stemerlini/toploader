@@ -177,3 +177,16 @@ def test_table_layout_fits(width):
 def test_table_layout_drops_set_first_and_keeps_everything_when_wide():
     assert "set" not in table_layout(110) and "rarity" in table_layout(115)
     assert set(table_layout(200)) == {key for key, *_ in COLUMNS}
+
+
+async def test_about_screen(make_app):
+    from toploader import __version__
+    from toploader.screens import AboutScreen
+
+    app = make_app()
+    async with app.run_test(size=(130, 31)) as pilot:
+        await pilot.press("question_mark")
+        assert isinstance(app.screen, AboutScreen)
+        assert __version__ in str(app.screen.query_one(".title").render())
+        await pilot.press("escape")
+        assert not isinstance(app.screen, AboutScreen)

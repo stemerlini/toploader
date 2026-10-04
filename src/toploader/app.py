@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import UTC
 from pathlib import Path
 
 from rich.text import Text
@@ -13,15 +14,22 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import DataTable, Footer, Input, OptionList, Static, Tab, Tabs
 from textual.widgets.option_list import Option
 
+from . import logo
 from .config import Config
-from .db import FINISH_NAMES, Card, Database, Entry
 from .currency import CURRENCIES, SOURCE_CURRENCY, SYMBOLS, Rates, money
+from .db import FINISH_NAMES, Card, Database, Entry
 from .games import GAMES, SOURCE_NAMES, Game
-from .theme import omarchy_theme
 from .screens import (
-    LANGUAGE_NAMES, LANGUAGE_STYLES, ConfirmScreen, EntryData, EntryScreen, PreviewScreen,
+    LANGUAGE_NAMES,
+    LANGUAGE_STYLES,
+    AboutScreen,
+    ConfirmScreen,
+    EntryData,
+    EntryScreen,
+    PreviewScreen,
     SearchScreen,
 )
+from .theme import omarchy_theme
 
 GROUPINGS = ["set", "language", "type", "rarity", "category", "condition"]
 SORTS = ["set", "name", "value", "quantity"]
@@ -132,6 +140,7 @@ class Toploader(App):
         Binding("c", "cycle_currency", "€/£/$"),
         Binding("p", "toggle_source", "Price source"),
         Binding("tab", "focus_next", "Switch pane", show=False),
+        Binding("question_mark", "about", "About", key_display="?"),
         Binding("q", "quit", "Quit"),
     ]
 
@@ -150,7 +159,10 @@ class Toploader(App):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="topbar"):
-            yield Static("▣ Toploader", id="brand")
+            yield Static(logo.to_text(logo.sprite(logo.SMALL_BALL)), id="brand-logo")
+            with Vertical(id="brand"):
+                yield Static("Toploader", id="brand-name")
+                yield Static("card collection", id="brand-tagline")
             yield Tabs(*(Tab(f"{g.icon} {g.name}", id=g.id) for g in self.games.values()),
                        id="games")
             yield Static(id="stats")
@@ -364,7 +376,10 @@ class Toploader(App):
         empty.display = not visible
         table.display = bool(visible)
         if not self.entries:
-            empty.update("Your binder is empty.\n\nPress [b]a[/] to add your first card.")
+            empty.update(Text.assemble(
+                logo.banner(), "\n\n\nYour binder is empty.\n\nPress ",
+                ("a", "bold"), " to add your first card or sealed product.",
+            ))
         else:
             empty.update("No cards match.")
 
@@ -423,6 +438,9 @@ class Toploader(App):
             event.stop()
 
     # -- actions -----------------------------------------------------------
+
+    def action_about(self) -> None:
+        self.push_screen(AboutScreen())
 
     def action_preview(self) -> None:
         entry = self.current_entry()
@@ -559,9 +577,9 @@ class Toploader(App):
     @work(exclusive=True, group="prices")
     async def refresh_if_stale(self) -> None:
         """Refresh prices on startup when they are older than a day."""
-        from datetime import datetime, timedelta, timezone
+        from datetime import datetime, timedelta
 
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+        cutoff = datetime.now(UTC) - timedelta(hours=24)
         stale = [
             e.card for e in self.entries
             if not e.card.updated_at or datetime.fromisoformat(e.card.updated_at) < cutoff

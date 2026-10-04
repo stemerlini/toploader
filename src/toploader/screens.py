@@ -16,8 +16,8 @@ from textual.widgets.option_list import Option
 from textual_image._terminal import get_cell_size  # cached probe of the terminal's cell size
 from textual_image.widget import Image
 
-from .db import CONDITION_NAMES, FINISH_NAMES, PRINT_RUNS, Card, Entry
 from .currency import SOURCE_CURRENCY, SYMBOLS, Rates, money
+from .db import CONDITION_NAMES, FINISH_NAMES, PRINT_RUNS, Card, Entry
 from .games import SOURCE_NAMES, Game, SearchResult
 from .images import fetch_image
 
@@ -272,7 +272,8 @@ class SearchScreen(ModalScreen[Card | None]):
         try:
             await self.game.prepare(
                 lambda done, total: status.update(
-                    f"Downloading the {self.game.name} catalogue (first time only)… {done}/{total} sets"
+                    f"Downloading the {self.game.name} catalogue (first time only)… "
+                    f"{done}/{total} sets"
                 )
             )
         except Exception as exc:
@@ -411,7 +412,8 @@ class EntryScreen(ModalScreen[EntryData | None]):
                              value=e.language if e and e.language in LANGUAGES else self.language,
                              allow_blank=False, id="language", compact=True)
                 yield Label("Quantity")
-                yield Input(str(e.quantity if e else 1), type="integer", id="quantity", compact=True)
+                yield Input(str(e.quantity if e else 1), type="integer", id="quantity",
+                            compact=True)
                 paid_currency = e.purchase_currency if e and e.purchase_price is not None \
                     else self.currency
                 self.paid_currency = paid_currency
@@ -496,3 +498,49 @@ class ConfirmScreen(ModalScreen[bool]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "yes")
+
+
+# -- About ----------------------------------------------------------------------
+
+KEYS = [
+    ("a", "add a card or sealed product"),
+    ("space", "preview (also in search results; Enter adds)"),
+    ("e / enter", "edit the selected line"),
+    ("+ / -", "change quantity"),
+    ("d", "delete"),
+    ("g / s", "change grouping / sort"),
+    ("/", "filter the list"),
+    ("r", "refresh prices"),
+    ("c / p", "currency € £ $ / preferred price source"),
+    ("q", "quit (and back up to GitHub)"),
+]
+
+
+class AboutScreen(ModalScreen[None]):
+    BINDINGS = [Binding("escape,question_mark,space,q", "dismiss", "Close")]
+
+    def compose(self) -> ComposeResult:
+        from . import __version__, logo
+        from .paths import ROOT
+
+        with VerticalScroll(id="about"):
+            yield Static(logo.banner(), id="about-banner")
+            yield Static(f"[b]Toploader {__version__}[/]  [dim]· your trading card binder in "
+                         "the terminal[/]", classes="title")
+            yield Static("Search", classes="section")
+            yield Static(
+                "[dim]by name[/] pikachu · [dim]by number[/] 270/SM-P, swsh3 136 · "
+                "[dim]by set[/] s4a, sm10 sealed, sv2a charizard",
+                classes="details",
+            )
+            yield Static("Keys", classes="section")
+            yield Static("\n".join(f"[b]{k:<10}[/] {v}" for k, v in KEYS), classes="details")
+            yield Static("Data", classes="section")
+            yield Static(
+                "[dim]Japanese cards & sealed[/] TCGCSV (TCGplayer, daily)\n"
+                "[dim]International cards[/]    TCGdex (Cardmarket & TCGplayer)\n"
+                "[dim]Exchange rates[/]         ECB via frankfurter.dev\n"
+                f"[dim]Collection[/]             {ROOT / 'data' / 'collection.db'}",
+                classes="details",
+            )
+            yield Static("[dim]Esc to close[/]", classes="footnote")
