@@ -1,27 +1,17 @@
 # Toploader for macOS
 
-Toploader is a terminal app: it runs in Terminal, iTerm2, Ghostty or any other
-terminal.
-
 ## Install
 
-1. Unzip, then open Terminal in this folder (or drag the folder onto the
-   Terminal icon).
-2. macOS blocks apps downloaded from the internet that aren't from the App
-   Store or a registered developer. Allow this one:
+1. Drag **Toploader.app** into your **Applications** folder.
+2. macOS blocks apps that aren't from the App Store or a registered developer.
+   Allow this one once: open **Terminal** and run
 
    ```sh
-   xattr -d com.apple.quarantine toploader
+   xattr -dr com.apple.quarantine /Applications/Toploader.app
    ```
 
-3. Put it on your PATH so you can type `toploader` anywhere:
-
-   ```sh
-   mkdir -p ~/.local/bin && mv toploader ~/.local/bin/
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-   ```
-
-   Open a new Terminal window and run `toploader`.
+3. Open Toploader from Launchpad, Spotlight or the Applications folder. It opens
+   in a Terminal window; drag it to the Dock to keep it there.
 
 The first start takes a few seconds while it unpacks itself; later starts are
 quicker.
@@ -31,11 +21,20 @@ quicker.
 Press `a` to add a card (search by name, `270/SM-P`, or a set code like `s4a`),
 Space to preview, `?` for all the keys, `q` to quit.
 
-Card images look best in **iTerm2**, **Ghostty**, **WezTerm** or **kitty**; the
-built-in Terminal app shows them as coloured blocks.
+The built-in Terminal app shows card images as coloured blocks; they look best in
+**iTerm2**, **Ghostty**, **WezTerm** or **kitty**. To use one of those, make it
+the app that opens Unix executables, or run Toploader from it directly:
+
+```sh
+mkdir -p ~/.local/bin
+ln -sf /Applications/Toploader.app/Contents/MacOS/toploader-cli ~/.local/bin/toploader
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+```
+
+Then type `toploader` in a new window.
 
 ## Your data
 
 Your collection is saved in `~/Library/Application Support/Toploader`. Back up
-that folder to keep it safe; replacing the `toploader` file with a newer version
-keeps your collection.
+that folder to keep it safe; replacing Toploader.app with a newer version keeps
+your collection.

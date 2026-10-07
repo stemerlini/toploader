@@ -36,3 +36,19 @@ def test_png_export(tmp_path):
     image = Image.open(tmp_path / "logo.png")
     assert image.size == (64, 64)
     assert image.getpixel((0, 0))[3] == 0  # transparent corner
+
+
+def test_mac_app_icon_is_a_ball_on_a_rounded_tile():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).parents[1] / "packaging" / "make_icon.py"
+    spec = importlib.util.spec_from_file_location("make_icon", path)
+    make_icon = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(make_icon)
+
+    image = make_icon.icon()
+    assert image.size == (1024, 1024)
+    assert image.getpixel((0, 0))[3] == 0  # transparent outside the tile
+    assert image.getpixel((512, 512))[:3] == (255, 255, 255)  # the button
+    assert image.getpixel((150, 512))[:3] == (0x3A, 0x3E, 0x50)  # the tile

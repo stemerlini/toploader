@@ -1,4 +1,4 @@
-# Builds the standalone macOS executable (Apple Silicon and Intel).
+# Builds Toploader.app for macOS (Apple Silicon and Intel).
 # Run it by hand from the Actions tab, or push a version tag: tagged builds are
 # attached to that GitHub release.
 name: macOS build
@@ -46,13 +46,16 @@ jobs:
           dist/toploader summary
           test -d "$HOME/Library/Application Support/Toploader/data"
 
-      - name: Package
+      - name: Package Toploader.app
         run: |
           name="toploader-${GITHUB_REF_NAME#v}-macos-${{ matrix.arch }}"
           [[ $GITHUB_REF_TYPE == tag ]] || name="toploader-macos-${{ matrix.arch }}"
           mkdir "$name"
-          cp dist/toploader "$name/"
+          packaging/make_app.sh dist/toploader "$name"
           cp packaging/MAC.md "$name/README.md"
+          plutil -lint "$name/Toploader.app/Contents/Info.plist"
+          codesign --verify --deep --strict "$name/Toploader.app"
+          "$name/Toploader.app/Contents/MacOS/toploader-cli" --version
           ditto -c -k --keepParent "$name" "$name.zip"
           echo "ZIP=$name.zip" >> "$GITHUB_ENV"
 

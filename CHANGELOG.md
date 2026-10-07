@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 — 2026-10-07
+
+### macOS
+- **Toploader.app** with the Poké Ball icon: drag it to Applications, double-click to
+  open Toploader in a Terminal window. The release zips now contain the app instead of
+  the bare executable, which stays available inside it
+  (`Toploader.app/Contents/MacOS/toploader-cli`).
+
 ## 1.2.0 — 2026-10-07
 
 ### macOS
