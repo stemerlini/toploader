@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 from PIL import Image as PILImage
 from rich.text import Text
@@ -14,6 +17,9 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, LoadingIndicator, OptionList, Select, Static
 from textual.widgets.option_list import Option
 from textual_image._terminal import get_cell_size  # cached probe of the terminal's cell size
+from textual_image.renderable import Image as AutoRenderable
+from textual_image.renderable.sixel import Image as SixelRenderable
+from textual_image.renderable.tgp import Image as TGPRenderable
 from textual_image.widget import Image
 
 from .currency import SOURCE_CURRENCY, SYMBOLS, Rates, money
@@ -37,6 +43,22 @@ def language_badge(language: str) -> str:
 
 # -- Preview ------------------------------------------------------------------
 
+# Whether the terminal shows real pixels (Sixel or the kitty protocol). Without
+# them a card is a blur of coloured blocks, so on macOS (Apple's Terminal) the
+# full image opens in Quick Look instead.
+GRAPHICS = AutoRenderable in (SixelRenderable, TGPRenderable)
+QUICK_LOOK = sys.platform == "darwin" and not GRAPHICS
+
+
+def open_externally(path: Path) -> subprocess.Popen | None:
+    """Show an image in the system viewer: Quick Look on macOS, else the default app."""
+    command = ["qlmanage", "-p", str(path)] if sys.platform == "darwin" else ["xdg-open", str(path)]
+    try:
+        return subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, start_new_session=True)
+    except OSError:
+        return None
+
 
 class PreviewScreen(ModalScreen[bool]):
     """Large card image next to the card's details and prices.
@@ -50,6 +72,7 @@ class PreviewScreen(ModalScreen[bool]):
         Binding("escape", "dismiss(False)", "Close", show=False),
         Binding("q", "dismiss(False)", "Close", show=False),
         Binding("enter", "add", "Add to collection"),
+        Binding("o", "open_image", "Open full image"),
     ]
 
     def __init__(
@@ -76,6 +99,19 @@ class PreviewScreen(ModalScreen[bool]):
 
     def action_add(self) -> None:
         self.dismiss(True)
+
+    def action_open_image(self) -> None:
+        if self.image_path:
+            self.close_viewer()
+            self.viewer = open_externally(self.image_path)
+
+    def close_viewer(self) -> None:
+        if self.viewer and sys.platform == "darwin":  # Quick Look closes with the preview
+            self.viewer.terminate()
+        self.viewer = None
+
+    def on_unmount(self) -> None:
+        self.close_viewer()
 
     def compose(self) -> ComposeResult:
         card = self.card
@@ -171,6 +207,8 @@ class PreviewScreen(ModalScreen[bool]):
 
     def on_mount(self) -> None:
         self.image_px: tuple[int, int] | None = None
+        self.image_path: Path | None = None
+        self.viewer: subprocess.Popen | None = None
         self.load_image()
 
     @work(exclusive=True)
@@ -183,7 +221,13 @@ class PreviewScreen(ModalScreen[bool]):
         except Exception:
             path = None
         await holder.remove_children()
-        if path:
+        self.image_path = path
+        if path and QUICK_LOOK:
+            await holder.mount(Static(
+                "Full-size image\nopened in Quick Look\n\n[dim]o  open it again[/]",
+                classes="no-image"))
+            self.action_open_image()
+        elif path:
             image = Image(path, id="card-image")
             image.display = False  # shown once it has been sized, to avoid a stretched flash
             await holder.mount(image)
@@ -504,7 +548,7 @@ class ConfirmScreen(ModalScreen[bool]):
 
 KEYS = [
     ("a", "add a card or sealed product"),
-    ("space", "preview (also in search results; Enter adds)"),
+    ("space", "preview (also in search results; Enter adds, o full image)"),
     ("e / enter", "edit the selected line"),
     ("+ / -", "change quantity"),
     ("d", "delete"),

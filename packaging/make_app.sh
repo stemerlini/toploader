@@ -3,8 +3,9 @@
 #   packaging/make_app.sh dist/toploader OUT_DIR   ->  OUT_DIR/Toploader.app
 #
 # Toploader is a terminal app, so the .app is a small launcher: double-clicking
-# it opens the bundled executable in a new terminal window (whatever app opens
-# Unix executables, Terminal unless changed). The executable itself is
+# it opens the bundled executable in a new terminal window, preferring one that
+# shows images (Ghostty, kitty, WezTerm) and otherwise whatever opens Unix
+# executables (Terminal unless changed). The executable itself is
 # Contents/MacOS/toploader-cli, which can also be linked onto the PATH.
 set -euo pipefail
 
@@ -21,8 +22,14 @@ python "$here/make_icon.py" "$app/Contents/Resources/Toploader.icns"
 
 cat > "$app/Contents/MacOS/Toploader" <<'SH'
 #!/bin/bash
-# Open Toploader in a new terminal window.
-exec open "$(cd "$(dirname "$0")" && pwd)/toploader-cli"
+# Open Toploader in a new terminal window, in one that shows card images if installed.
+cli="$(cd "$(dirname "$0")" && pwd)/toploader-cli"
+has() { [[ -d "/Applications/$1.app" || -d "$HOME/Applications/$1.app" ]]; }
+if has Ghostty; then exec open -na Ghostty --args -e "$cli"
+elif has kitty; then exec open -na kitty --args "$cli"
+elif has WezTerm; then exec open -na WezTerm --args start -- "$cli"
+else exec open "$cli"
+fi
 SH
 chmod +x "$app/Contents/MacOS/Toploader" "$app/Contents/MacOS/toploader-cli"
 

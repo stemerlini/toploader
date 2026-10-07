@@ -21,9 +21,11 @@ quicker.
 Press `a` to add a card (search by name, `270/SM-P`, or a set code like `s4a`),
 Space to preview, `?` for all the keys, `q` to quit.
 
-The built-in Terminal app shows card images as coloured blocks; they look best in
-**iTerm2**, **Ghostty**, **WezTerm** or **kitty**. To use one of those, make it
-the app that opens Unix executables, or run Toploader from it directly:
+Card images: Apple's Terminal can't show pictures, so there Space opens the card
+at full size in **Quick Look** next to the details (Space closes it again, `o`
+reopens it). To see cards inside Toploader itself, install
+[Ghostty](https://ghostty.org) (free), kitty or WezTerm: Toploader.app opens in
+it automatically. In iTerm2 or any other terminal you can run it directly:
 
 ```sh
 mkdir -p ~/.local/bin

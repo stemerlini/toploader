@@ -160,7 +160,7 @@ class Toploader(App):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="topbar"):
-            yield Static(logo.to_text(logo.sprite(logo.SMALL_BALL)), id="brand-logo")
+            yield Static(logo.small_ball(), id="brand-logo")
             with Vertical(id="brand"):
                 yield Static("Toploader", id="brand-name")
                 yield Static("card collection", id="brand-tagline")

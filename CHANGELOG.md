@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.1 — 2026-10-07
+
+### macOS
+- In terminals that can't show images (Apple's Terminal), Space opens the card at
+  full size in Quick Look instead of a blur of coloured blocks; `o` reopens it (and
+  opens the full image in the default viewer on Linux).
+- The pixel logo no longer shows gaps between rows in Apple's Terminal.
+- Toploader.app opens in Ghostty, kitty or WezTerm when one is installed, so card
+  images show inside the app.
+
 ## 1.3.0 — 2026-10-07
 
 ### macOS

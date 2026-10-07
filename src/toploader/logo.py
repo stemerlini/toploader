@@ -8,6 +8,8 @@ exported as PNGs for the README.
 
 from __future__ import annotations
 
+import os
+
 from rich.style import Style
 from rich.text import Text
 
@@ -53,6 +55,14 @@ WWWWWWWs
 ..ssss..
 """
 
+# SMALL_BALL for terminals without gapless half blocks: one pixel per cell.
+SMALL_BALL_CELLS = """
+.rRRRRd.
+RRRRRRRd
+kkkBBkkk
+.WWWWWs.
+"""
+
 # 5x7 pixel font, just the letters of the name.
 GLYPHS = {
     "T": ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
@@ -81,10 +91,43 @@ def wordmark(word: str = "TOPLOADER") -> list[str]:
     return rows
 
 
+def half_blocks_ok() -> bool:
+    """Apple's Terminal leaves a gap between rows of block characters, which
+    stripes half-block art; there, sprites are drawn with coloured cells."""
+    return os.environ.get("TERM_PROGRAM") != "Apple_Terminal"
+
+
+def small_ball() -> Text:
+    """The top bar's logo, four cells tall either way."""
+    if half_blocks_ok():
+        return to_text(sprite(SMALL_BALL))
+    return to_cells(sprite(SMALL_BALL_CELLS))
+
+
+def to_cells(rows: list[str]) -> Text:
+    """Render a sprite as coloured cells, one pixel per cell (no gaps anywhere)."""
+    text = Text(no_wrap=True)
+    for y, row in enumerate(rows):
+        for ch in row:
+            color = PALETTE.get(ch)
+            text.append(" ", Style(bgcolor=color) if color else None)
+        if y + 1 < len(rows):
+            text.append("\n")
+    return text
+
+
 def to_text(rows: list[str]) -> Text:
-    """Render a sprite with half blocks: each cell shows two stacked pixels."""
+    """Render a sprite with half blocks: each cell shows two stacked pixels.
+
+    Where half blocks don't join up, each pair of rows becomes one row of
+    coloured cells instead (the upper pixel wins), at the same size."""
     if len(rows) % 2:
         rows = rows + ["." * len(rows[0])]
+    if not half_blocks_ok():
+        return to_cells([
+            "".join(t if t in PALETTE else b for t, b in zip(top, bottom, strict=True))
+            for top, bottom in zip(rows[::2], rows[1::2], strict=True)
+        ])
     text = Text(no_wrap=True)
     for y in range(0, len(rows), 2):
         for top, bottom in zip(rows[y], rows[y + 1], strict=True):
@@ -105,6 +148,20 @@ def to_text(rows: list[str]) -> Text:
 def banner() -> Text:
     """Big ball next to the wordmark, for the About and empty screens."""
     ball = sprite(BALL)
+    if not half_blocks_ok():
+        # The pixel font needs both pixels of each cell, so spell the name instead.
+        ball_text = to_text(ball)
+        lines = ball_text.split("\n")
+        word = Text("T O P L O A D E R", style=f"bold {PALETTE['R']}")
+        out = Text(no_wrap=True)
+        for i, line in enumerate(lines):
+            out.append_text(line)
+            if i == len(lines) // 2 - 1:
+                out.append("    ")
+                out.append_text(word)
+            if i + 1 < len(lines):
+                out.append("\n")
+        return out
     word = wordmark()
     # Centre the 7-pixel wordmark (padded to 8) against the 16-pixel ball.
     pad = "." * len(word[0])

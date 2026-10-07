@@ -190,3 +190,36 @@ async def test_about_screen(make_app):
         assert __version__ in str(app.screen.query_one(".title").render())
         await pilot.press("escape")
         assert not isinstance(app.screen, AboutScreen)
+
+
+async def test_preview_opens_quick_look_without_terminal_graphics(make_app, monkeypatch):
+    opened = []
+
+    class FakeViewer:
+        def terminate(self):
+            opened.append("closed")
+
+    def fake_open(path):
+        opened.append(path)
+        return FakeViewer()
+
+    monkeypatch.setattr(screens_module, "QUICK_LOOK", True)
+    monkeypatch.setattr(screens_module, "open_externally", fake_open)
+    monkeypatch.setattr(screens_module.sys, "platform", "darwin")
+    app = make_app()
+    app.db.add_entry(PIKACHU, "holo", "NM", "JP", 1)
+    async with app.run_test(size=(130, 31)) as pilot:
+        await settle(pilot)
+        await pilot.press("space")
+        await settle(pilot)
+        assert isinstance(app.screen, PreviewScreen)
+        assert not app.screen.query("#card-image")  # no blocky image in the terminal
+        assert len(opened) == 1 and opened[0].name == "card.png"
+
+        await pilot.press("o")  # reopen
+        assert opened[1:] == ["closed", opened[0]]
+
+        await pilot.press("space")
+        await settle(pilot)
+        assert not isinstance(app.screen, PreviewScreen)
+        assert opened[-1] == "closed"  # Quick Look closes with the preview

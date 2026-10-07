@@ -78,7 +78,7 @@ In the results, **Space** previews and **Enter** adds.
 | Key | Action |
 |---|---|
 | `a` | Add a card or sealed product |
-| `space` | Preview the selected card |
+| `space` | Preview the selected card (`o` in the preview opens the full image) |
 | `e` / `enter` | Edit the selected line (finish, condition, print run, value…) |
 | `+` / `-` | Change quantity |
 | `d` | Delete |

@@ -52,3 +52,15 @@ def test_mac_app_icon_is_a_ball_on_a_rounded_tile():
     assert image.getpixel((0, 0))[3] == 0  # transparent outside the tile
     assert image.getpixel((512, 512))[:3] == (255, 255, 255)  # the button
     assert image.getpixel((150, 512))[:3] == (0x3A, 0x3E, 0x50)  # the tile
+
+
+def test_apple_terminal_gets_gapless_cells(monkeypatch):
+    from toploader import logo
+
+    monkeypatch.setenv("TERM_PROGRAM", "Apple_Terminal")
+    for text in (logo.small_ball(), logo.banner()):
+        assert not set(text.plain) & {"▀", "▄"}  # no half blocks to leave gaps
+    assert len(logo.small_ball().plain.splitlines()) == 4  # same height as the top bar
+
+    monkeypatch.setenv("TERM_PROGRAM", "foot")
+    assert "▀" in logo.banner().plain
