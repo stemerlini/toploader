@@ -137,7 +137,8 @@ async def test_sealed_form_print_run_and_own_value(make_app):
         assert str(table.get_cell_at((0, list(app._layout).index("price")))).startswith("✎")
 
 
-async def test_preview_keeps_the_card_aspect_ratio(make_app):
+async def test_preview_keeps_the_card_aspect_ratio(make_app, monkeypatch):
+    monkeypatch.setattr(screens_module, "QUICK_LOOK", False)  # an image in the terminal
     app = make_app()
     app.db.add_entry(PIKACHU, "holo", "NM", "JP", 1)
     for size in [(130, 31), (200, 55), (90, 45)]:
