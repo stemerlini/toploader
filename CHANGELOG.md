@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — 2026-10-07
+
+### macOS
+- Standalone executable for Apple Silicon and Intel Macs, built on GitHub and attached
+  to each release (`toploader-…-macos-apple-silicon.zip`, `…-intel.zip`); install notes
+  in `packaging/MAC.md`.
+- A standalone or installed copy keeps its collection in the platform data folder
+  (`~/Library/Application Support/Toploader` on macOS); running from the project folder
+  is unchanged. The backup on quit only runs when the data folder is a git repository.
+
 ## 1.1.0 — 2026-10-04
 
 ### Omarchy integration
