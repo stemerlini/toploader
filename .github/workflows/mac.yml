@@ -1,0 +1,68 @@
+# Builds the standalone macOS executable (Apple Silicon and Intel).
+# Run it by hand from the Actions tab, or push a version tag: tagged builds are
+# attached to that GitHub release.
+name: macOS build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: apple-silicon
+          - runner: macos-15-intel
+            arch: intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install
+        run: pip install -e ".[dev,build]"
+
+      - name: Test
+        run: pytest -q
+
+      - name: Build
+        run: pyinstaller --noconfirm --distpath dist --workpath build packaging/toploader.spec
+
+      - name: Smoke test with an empty home folder
+        run: |
+          export HOME="$(mktemp -d)"
+          unset TOPLOADER_HOME
+          dist/toploader --version
+          dist/toploader summary
+          test -d "$HOME/Library/Application Support/Toploader/data"
+
+      - name: Package
+        run: |
+          name="toploader-${GITHUB_REF_NAME#v}-macos-${{ matrix.arch }}"
+          [[ $GITHUB_REF_TYPE == tag ]] || name="toploader-macos-${{ matrix.arch }}"
+          mkdir "$name"
+          cp dist/toploader "$name/"
+          cp packaging/MAC.md "$name/README.md"
+          ditto -c -k --keepParent "$name" "$name.zip"
+          echo "ZIP=$name.zip" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP }}
+          path: ${{ env.ZIP }}
+
+      - name: Attach to the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber

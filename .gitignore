@@ -4,3 +4,7 @@ __pycache__/
 cache/
 # One-off backup taken before the JP/EN merge (2026-10-04); not part of history.
 data/collection.backup-*.db
+
+# PyInstaller output (packaging/toploader.spec)
+build/
+dist/

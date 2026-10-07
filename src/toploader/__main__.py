@@ -25,7 +25,7 @@ def run_app() -> None:
     app.run()
 
     app.db.conn.close()  # make sure the collection file is complete before committing
-    if app.config.auto_backup:
+    if app.config.auto_backup and (ROOT / ".git").exists():  # only a git-backed data folder
         copies, unique, value = app.summary()
         message = (f"Collection: {copies} cards ({unique} unique), "
                    f"{money(value, app.currency)}")
