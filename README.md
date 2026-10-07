@@ -52,6 +52,11 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ./toploader
 ```
 
+**macOS:** a standalone executable for Apple Silicon and Intel Macs is built on GitHub
+(Actions → *macOS build*, or attached to each tagged release). See
+[packaging/MAC.md](packaging/MAC.md) for installing it. It keeps the collection in
+`~/Library/Application Support/Toploader`.
+
 Press `a` to add your first card, `?` for help. `toploader summary` prints the
 collection totals as JSON (from saved prices, no network).
 
